@@ -13,20 +13,20 @@ class Server(User):
 
         class ChatServicerServer(chat_pb2.ChatServicer):
             def Send(self, request, context):
-                logging.info("sever received message")
-                display(request.message)
+                logging.info("server received message")
+                display(request.text)
                 return chat_pb2.Message(text="got it")
 
-        server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
-        chat_pb2.add_ChatServicer_to_server(ChatServicerServer(), server)
-        server.add_insecure_port("{host}:{port}".format(host=host, port=port))
-        server.start()
+        self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
+        chat_pb2.add_ChatServicer_to_server(ChatServicerServer(), self.server)
+        self.server.add_insecure_port("{host}:{port}".format(host=host, port=port+1))
+        self.server.start()
 
         logging.info("server started")
 
     def connect(self, host, port):
-        channel = grpc.insecure_channel("{host}:{port}".format(host=host, port=port+1))
-        self.stub = chat_pb2.ChatStub(channel)
+        self.channel = grpc.insecure_channel("{host}:{port}".format(host=host, port=port))
+        self.stub = chat_pb2.ChatStub(self.channel)
         logging.info("server connected to client")
 
     def send_message(self, msg):
